@@ -1,0 +1,6 @@
+*.fits
+*.fit
+*.xisf
+rust
+examples_input
+examples_output

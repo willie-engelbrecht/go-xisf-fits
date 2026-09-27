@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="night">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XISF to FITS</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-h-screen bg-base-200 text-base-content">
+  <main class="mx-auto px-4 py-8" style="width:80%">
+    <h1 class="text-3xl font-semibold">XISF to FITS</h1>
+    <p class="mt-2 opacity-80">Converts every .xisf file under the input directory, including subfolders, and writes .fits files in the same folder layout. Results are listed here and saved to a timestamped log in the output directory.</p>
+
+    <form id="convert" method="post" action="/convert" class="card bg-base-100 shadow-md mt-6">
+      <div class="card-body gap-4">
+        <div>
+          <label class="label" for="input">Input directory</label>
+          <div class="flex gap-2">
+            <input id="input" name="input" type="text" required spellcheck="false" autocomplete="off" placeholder="D:\images\lights" class="input input-bordered grow">
+            <button type="button" class="btn btn-outline" data-browse="input">Browse</button>
+          </div>
+        </div>
+        <div>
+          <label class="label" for="output">Output directory</label>
+          <div class="flex gap-2">
+            <input id="output" name="output" type="text" required spellcheck="false" autocomplete="off" placeholder="D:\images\fits" class="input input-bordered grow">
+            <button type="button" class="btn btn-outline" data-browse="output">Browse</button>
+          </div>
+        </div>
+        <div class="grid gap-4 md:grid-cols-3">
+          <div>
+            <label class="label" for="compression">Compression</label>
+            <select id="compression" name="compression" class="select select-bordered w-full">
+              <option value="gzip" selected>Gzip</option>
+              <option value="none">None — uncompressed</option>
+            </select>
+          </div>
+          <div>
+            <label class="label" for="cores">CPU cores</label>
+            <select id="cores" name="cores" class="select select-bordered w-full">
+              {{range .CoreChoices}}
+              <option value="{{.}}"{{if eq . $.DefaultCores}} selected{{end}}>{{.}} {{if eq . 1}}core{{else}}cores{{end}}</option>
+              {{end}}
+            </select>
+          </div>
+          <div class="flex items-end">
+            <label class="label cursor-pointer justify-start gap-3">
+              <input id="shuffle" name="shuffle" type="checkbox" class="checkbox checkbox-primary" checked>
+              <span>Byte shuffling <span class="opacity-70">(Gzip only, FITS GZIP_2)</span></span>
+            </label>
+          </div>
+        </div>
+        <p id="command" class="font-mono text-sm break-all select-all w-full rounded-box border border-base-content/20 bg-base-200 px-4 py-3"></p>
+        <div>
+          <button id="go" type="submit" class="btn btn-primary">Convert</button>
+          <progress id="bar" class="progress progress-primary w-full mt-4" value="0" max="1"></progress>
+          <p id="progress-label" class="text-sm opacity-70 mt-1"></p>
+        </div>
+      </div>
+    </form>
+
+    <h2 class="text-xl mt-8 mb-2">Output</h2>
+    <div id="log" aria-live="polite" class="bg-base-100 rounded-box p-4 min-h-80 overflow-auto whitespace-pre-wrap break-words font-mono text-sm"></div>
+  </main>
+  <script>
+    const form = document.getElementById("convert");
+    const log = document.getElementById("log");
+    const button = document.getElementById("go");
+    const bar = document.getElementById("bar");
+    const progressLabel = document.getElementById("progress-label");
+    const compression = document.getElementById("compression");
+    const shuffle = document.getElementById("shuffle");
+    const cores = document.getElementById("cores");
+    const command = document.getElementById("command");
+
+    function quoteArg(value) {
+      return '"' + String(value).replace(/[`"$]/g, "`$&") + '"';
+    }
+
+    function renderCommand() {
+      const comp = compression.value === "none" ? "none" : "gzip";
+      let shuffleFlag = "";
+      if (comp === "gzip") {
+        shuffleFlag = shuffle.checked ? " --shuffle" : " --shuffle=false";
+      }
+      command.textContent = "go run ./cmd/xisfits convert --input " + quoteArg(document.getElementById("input").value) +
+        " --output " + quoteArg(document.getElementById("output").value) +
+        " --compression " + comp + shuffleFlag + " --cores " + cores.value;
+    }
+
+    function syncShuffle() {
+      const gzip = compression.value === "gzip";
+      shuffle.disabled = !gzip;
+      if (!gzip) shuffle.checked = false;
+      renderCommand();
+    }
+    compression.addEventListener("change", syncShuffle);
+    document.getElementById("input").addEventListener("input", renderCommand);
+    document.getElementById("output").addEventListener("input", renderCommand);
+    cores.addEventListener("change", renderCommand);
+    shuffle.addEventListener("change", renderCommand);
+    syncShuffle();
+
+    function clearLog() {
+      log.replaceChildren();
+    }
+
+    function appendLine(line) {
+      const row = document.createElement("div");
+      const mark = line.startsWith("OK ") ? "OK" : (line.startsWith("FAIL ") ? "FAIL" : "");
+      if (mark) {
+        const status = document.createElement("span");
+        status.className = mark === "OK" ? "text-success font-bold" : "text-error font-bold";
+        status.textContent = mark;
+        row.appendChild(status);
+        row.appendChild(document.createTextNode(line.slice(mark.length)));
+      } else {
+        row.textContent = line;
+      }
+      log.appendChild(row);
+    }
+
+    function showText(text) {
+      clearLog();
+      for (const line of String(text).split("\n")) {
+        if (line !== "") appendLine(line);
+      }
+    }
+
+    document.querySelectorAll("[data-browse]").forEach((el) => {
+      el.addEventListener("click", async () => {
+        const kind = el.getAttribute("data-browse");
+        el.disabled = true;
+        try {
+          const body = new FormData();
+          body.set("kind", kind);
+          const resp = await fetch("/browse", { method: "POST", body });
+          const text = (await resp.text()).trim();
+          if (!resp.ok) {
+            showText(text);
+            return;
+          }
+          if (text) {
+            document.getElementById(kind).value = text;
+            renderCommand();
+          }
+        } catch (err) {
+          showText(err);
+        } finally {
+          el.disabled = false;
+        }
+      });
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearLog();
+      bar.value = 0;
+      bar.max = 1;
+      progressLabel.textContent = "";
+      button.disabled = true;
+      const label = button.textContent;
+      button.textContent = "Converting…";
+      let pending = "";
+      const take = (text) => {
+        pending += text;
+        const lines = pending.split("\n");
+        pending = lines.pop();
+        for (const line of lines) {
+          if (line.startsWith("PROGRESS ")) {
+            const parts = line.split(" ");
+            const done = Number(parts[1]);
+            const total = Number(parts[2]);
+            if (total > 0) {
+              bar.max = total;
+              bar.value = done;
+              progressLabel.textContent = done + " / " + total;
+            }
+          } else if (line !== "") {
+            appendLine(line);
+          }
+        }
+      };
+      try {
+        const resp = await fetch("/convert", { method: "POST", body: new FormData(form) });
+        if (!resp.ok || !resp.body) {
+          showText(await resp.text());
+          return;
+        }
+        const reader = resp.body.getReader();
+        const dec = new TextDecoder();
+        while (true) {
+          const chunk = await reader.read();
+          if (chunk.done) break;
+          take(dec.decode(chunk.value, { stream: true }));
+        }
+        take(dec.decode());
+        if (pending) take(pending + "\n");
+      } catch (err) {
+        appendLine(String(err));
+      } finally {
+        button.disabled = false;
+        button.textContent = label;
+      }
+    });
+  </script>
+</body>
+</html>
