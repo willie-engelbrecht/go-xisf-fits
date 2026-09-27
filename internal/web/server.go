@@ -16,8 +16,8 @@ import (
 	"sync"
 	"time"
 
-	"xisfits/internal/batch"
-	"xisfits/internal/fits"
+	"go-xisf-fits/internal/batch"
+	"go-xisf-fits/internal/fits"
 )
 
 //go:embed index.html

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"xisfits/internal/xisf"
+	"go-xisf-fits/internal/xisf"
 )
 
 func TestGzipShuffleRoundTrip(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"xisfits/internal/fits"
+	"go-xisf-fits/internal/fits"
 )
 
 func TestRunMirrorsSubfolders(t *testing.T) {

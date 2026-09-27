@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"xisfits/internal/fits"
-	"xisfits/internal/xisf"
+	"go-xisf-fits/internal/fits"
+	"go-xisf-fits/internal/xisf"
 )
 
 // ErrNoFiles is returned when the input directory contains no XISF files.

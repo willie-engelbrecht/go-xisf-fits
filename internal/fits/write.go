@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"xisfits/internal/xisf"
+	"go-xisf-fits/internal/xisf"
 )
 
 // Write creates a FITS file for img, replacing path if it already exists.

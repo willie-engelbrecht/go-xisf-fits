@@ -6,34 +6,34 @@ go-xisf-fits walks an input directory, including subfolders, and writes a `.fits
 
 ## How to run
 
-Go is required (`go 1.27` in `go.mod`).
+Go is required (`go 1.27.1` in `go.mod`).
 
 Convert a directory:
 
 ```bash
-go run ./cmd/xisfits convert --input DIR --output DIR
+go run ./cmd convert --input DIR --output DIR
 ```
 
 Open the GUI, which serves a page on localhost and opens a browser:
 
 ```bash
-go run ./cmd/xisfits gui
+go run ./cmd gui
 ```
 
 Or build once and run the binary:
 
 ```bash
-go build -o xisfits ./cmd/xisfits
+go build -o go-xisf-fits ./cmd
 ```
 
-On Windows the binary is `xisfits.exe`.
+On Windows the binary is `go-xisf-fits.exe`.
 
 ```bash
-xisfits convert --input DIR --output DIR
-xisfits gui
+go-xisf-fits convert --input DIR --output DIR
+go-xisf-fits gui
 ```
 
-`xisfits` with no arguments, or `xisfits help`, prints the same usage.
+`go-xisf-fits` with no arguments, or `go-xisf-fits help`, prints the same usage.
 
 ## SIMD
 
@@ -43,14 +43,14 @@ Windows (PowerShell):
 
 ```powershell
 $env:GOEXPERIMENT = "simd"
-go build -o xisfits.exe ./cmd/xisfits
+go build -o go-xisf-fits.exe ./cmd
 ```
 
 Linux:
 
 ```bash
 export GOEXPERIMENT=simd
-go build -o xisfits ./cmd/xisfits
+go build -o go-xisf-fits ./cmd
 ```
 
 `go run` in that same shell uses the SIMD build too. A normal build, with the variable unset, uses the scalar path.
@@ -60,7 +60,7 @@ go build -o xisfits ./cmd/xisfits
 ### convert
 
 ```bash
-xisfits convert --input DIR --output DIR
+go-xisf-fits convert --input DIR --output DIR
 ```
 
 | Flag | Default | Meaning |
@@ -74,7 +74,7 @@ xisfits convert --input DIR --output DIR
 ### gui
 
 ```bash
-xisfits gui [--port 8080]
+go-xisf-fits gui [--port 8080]
 ```
 
 The page has the same input, output, compression, shuffle, and cores controls, plus a live log and a progress bar. Folder browse dialogs work on Windows. On other systems, type the paths into the form.

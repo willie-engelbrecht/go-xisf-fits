@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"xisfits/internal/xisf"
+	"go-xisf-fits/internal/xisf"
 )
 
 func TestWriteUInt8PaddingAndKeyword(t *testing.T) {

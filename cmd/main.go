@@ -8,9 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"xisfits/internal/batch"
-	"xisfits/internal/fits"
-	"xisfits/internal/web"
+	"go-xisf-fits/internal/batch"
+	"go-xisf-fits/internal/fits"
+	"go-xisf-fits/internal/web"
 )
 
 func main() {
@@ -41,8 +41,8 @@ func usage(w io.Writer) {
 	fmt.Fprint(w, `XISF to FITS converter
 
 Usage:
-  xisfits convert --input DIR --output DIR
-  xisfits gui [--port 8080]
+  go-xis-fits convert --input DIR --output DIR
+  go-xis-fits gui [--port 8080]
 
 convert walks DIR, including subfolders, and writes a .fits file for each
 .xisf file. The output directory mirrors those folders. Both directories

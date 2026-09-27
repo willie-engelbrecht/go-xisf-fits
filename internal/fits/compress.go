@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	"xisfits/internal/xisf"
+	"go-xisf-fits/internal/xisf"
 )
 
 func writeCompressed(path string, axes []int, bitpix int, bzero string, keywords []xisf.Keyword, payload []byte, opt Options) error {

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"xisfits/internal/batch"
+	"go-xisf-fits/internal/batch"
 )
 
 func TestConvertRejectsEmptyPaths(t *testing.T) {
