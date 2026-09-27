@@ -35,6 +35,9 @@ go-xisf-fits gui
 
 `go-xisf-fits` with no arguments, or `go-xisf-fits help`, prints the same usage.
 
+### On the browser
+![XISF to FITS](screenshot/screenshot.png)
+
 ## SIMD
 
 Pixel bytes are reordered with a scalar loop unless you build with Go's experimental SIMD support. Set `GOEXPERIMENT` to `simd` in the same shell, then build or run as usual. That shell keeps the setting until you close it.
