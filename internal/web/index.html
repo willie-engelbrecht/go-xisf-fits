@@ -85,7 +85,7 @@
       if (comp === "gzip") {
         shuffleFlag = shuffle.checked ? " --shuffle" : " --shuffle=false";
       }
-      command.textContent = "go run ./cmd/xisfits convert --input " + quoteArg(document.getElementById("input").value) +
+      command.textContent = "./go-xisf-fits convert --input " + quoteArg(document.getElementById("input").value) +
         " --output " + quoteArg(document.getElementById("output").value) +
         " --compression " + comp + shuffleFlag + " --cores " + cores.value;
     }
